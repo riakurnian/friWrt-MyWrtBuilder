@@ -10,7 +10,7 @@ openclash_download="$(curl -s ${openclash_api} | grep "browser_download_url" | g
 
 # Passwall
 passwall_file="luci-app-passwall"
-passwall_download="https://github.com/xiaorouji/openwrt-passwall/releases/latest/download/luci-23.05_luci-app-passwall_25.2.12_all.ipk"
+passwall_download="https://github.com/xiaorouji/openwrt-passwall/releases/latest/download/luci-24.10_luci-app-passwall_25.4.20-r1_all.ipk"
 passwall_package_file="passwall_packages_ipk_aarch64_generic.zip"
 passwall_package_download="https://github.com/xiaorouji/openwrt-passwall/releases/latest/download/passwall_packages_ipk_aarch64_generic.zip"
 
