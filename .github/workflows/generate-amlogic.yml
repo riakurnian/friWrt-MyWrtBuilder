@@ -18,7 +18,7 @@ on:
       release_branch:
         description: "Select the release branch:"
         required: true
-        default: "immortalwrt:24.10.0"
+        default: "openwrt:24.10.1"
         type: choice
         options:
           - openwrt:24.10.0
@@ -78,9 +78,10 @@ on:
         type: choice
         options:
           - neko
+          - nikki
           - openclash
           - passwall
-          - neko-openclash-passwall
+          - neko-nikki-openclash-passwall
       clean:
         description: "Do 'make clean' for each run"
         required: false

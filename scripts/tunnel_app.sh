@@ -3,6 +3,10 @@
 # Neko
 neko_download="$(curl -s https://api.github.com/repos/nosignals/neko/releases/latest | jq -r '.assets[] | select(.name | endswith("_23_05.ipk")) | .browser_download_url')"
 
+# Nikki
+nikki_package_file="nikki_aarch64_generic-openwrt-24.10.tar.gz"
+nikki_package_download="https://github.com/nikkinikki-org/OpenWrt-nikki/releases/latest/download/nikki_aarch64_generic-openwrt-24.10.tar.gz"
+
 # Openclash
 openclash_api="https://api.github.com/repos/vernesong/OpenClash/releases"
 openclash_file="luci-app-openclash"
@@ -17,6 +21,13 @@ passwall_package_download="https://github.com/xiaorouji/openwrt-passwall/release
 if [ "$1" == "neko" ]; then
     echo "Downloading Neko packages"
     wget ${neko_download} -nv -P packages
+elif [ "$1" == "nikki" ]; then
+    echo "Downloading Nikki packages"
+    wget ${nikki_package_download} -nv -P packages
+    tar --wildcards -xf "packages/${nikki_package_file}" "*.ipk"
+    mv "packages/luci-app-nikki_*.ipk" "packages/luci-app-nikki.ipk"
+    mv "packages/luci-i18n-nikki-zh-cn_*.ipk" "packages/luci-i18n-nikki-zh-cn"
+    mv "packages/nikki_*.ipk" "packages/nikki.ipk"
 elif [ "$1" == "openclash" ]; then
     echo "Downloading Openclash packages"
     wget ${openclash_download} -nv -P packages
@@ -25,9 +36,15 @@ elif [ "$1" == "passwall" ]; then
     wget "${passwall_download}" -nv -P packages
     wget "${passwall_package_download}" -nv -P packages
     unzip -qq "packages/${passwall_package_file}" -d packages
-elif [ "$1" == "neko-openclash-passwall" ]; then
+elif [ "$1" == "neko-nikki-openclash-passwall" ]; then
     echo "Downloading Neko packages"
     wget ${neko_download} -nv -P packages
+    echo "Downloading Nikki packages"
+    wget ${nikki_package_download} -nv -P packages
+    tar --wildcards -xf "packages/${nikki_package_file}" "*.ipk"
+    mv "packages/luci-app-nikki_*.ipk" "packages/luci-app-nikki.ipk"
+    mv "packages/luci-i18n-nikki-zh-cn_*.ipk" "packages/luci-i18n-nikki-zh-cn"
+    mv "packages/nikki_*.ipk" "packages/nikki.ipk"
     echo "Downloading Openclash packages"
     wget ${openclash_download} -nv -P packages
     echo "Downloading Passwall packages"
