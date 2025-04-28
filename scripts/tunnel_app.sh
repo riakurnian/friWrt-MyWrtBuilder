@@ -25,9 +25,9 @@ elif [ "$1" == "nikki" ]; then
     echo "Downloading Nikki packages"
     wget ${nikki_package_download} -nv -P packages
     tar --wildcards -xf "packages/${nikki_package_file}" -C packages "*.ipk"
-    mv "packages/luci-app-nikki_*.ipk" "packages/luci-app-nikki.ipk"
-    mv "packages/luci-i18n-nikki-zh-cn_*.ipk" "packages/luci-i18n-nikki-zh-cn"
-    mv "packages/nikki_*.ipk" "packages/nikki.ipk"
+    mv packages/luci-app-nikki_*.ipk packages/luci-app-nikki.ipk
+    mv packages/luci-i18n-nikki-zh-cn_*.ipk packages/luci-i18n-nikki-zh-cn
+    mv packages/nikki_*.ipk packages/nikki.ipk
 elif [ "$1" == "openclash" ]; then
     echo "Downloading Openclash packages"
     wget ${openclash_download} -nv -P packages
@@ -42,9 +42,9 @@ elif [ "$1" == "neko-nikki-openclash-passwall" ]; then
     echo "Downloading Nikki packages"
     wget ${nikki_package_download} -nv -P packages
     tar --wildcards -xf "packages/${nikki_package_file}" -C packages "*.ipk"
-    mv "packages/luci-app-nikki_*.ipk" "packages/luci-app-nikki.ipk"
-    mv "packages/luci-i18n-nikki-zh-cn_*.ipk" "packages/luci-i18n-nikki-zh-cn"
-    mv "packages/nikki_*.ipk" "packages/nikki.ipk"
+    mv packages/luci-app-nikki_*.ipk packages/luci-app-nikki.ipk
+    mv packages/luci-i18n-nikki-zh-cn_*.ipk packages/luci-i18n-nikki-zh-cn
+    mv packages/nikki_*.ipk packages/nikki.ipk
     echo "Downloading Openclash packages"
     wget ${openclash_download} -nv -P packages
     echo "Downloading Passwall packages"
