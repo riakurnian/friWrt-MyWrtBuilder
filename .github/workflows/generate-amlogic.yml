@@ -77,6 +77,7 @@ on:
         default: "neko-nikki-openclash-passwall"
         type: choice
         options:
+          - no-tunnel
           - neko
           - nikki
           - openclash
@@ -87,12 +88,12 @@ on:
         required: false
         default: "true"
         type: boolean
-      upload-prerelease:
+      upload_prerelease:
         description: "Upload as pre-release"
         required: false
         default: "false"
         type: boolean
-      revision-tag:
+      revision_tag:
         description: "Revision img tag"
         required: false
         default: "false"
@@ -100,9 +101,9 @@ on:
 
 env:
   CLEAN: ${{ inputs.clean }}
-  PRE_RELEASE: ${{ inputs.upload-prerelease }}
+  PRE_RELEASE: ${{ inputs.upload_prerelease }}
   RELEASE_BRANCH: ${{ inputs.release_branch }}
-  REVISION_TAG: ${{ inputs.revision-tag }}
+  REVISION_TAG: ${{ inputs.revision_tag }}
   TARGET: ${{ inputs.target }}
   TUNNEL: ${{ inputs.tunnel }}
   TYPE: AMLOGIC
@@ -135,7 +136,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          docker rmi $(docker images -q) 2>/dev/null
+          docker rmi $(docker images -q) 2>/dev/null || true
           [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
           sudo swapoff -a
@@ -186,7 +187,6 @@ jobs:
             echo "PROFILE=generic" >> $GITHUB_ENV
             echo "TARGET_SYSTEM=armsr/armv8" >> $GITHUB_ENV
             echo "TARGET_NAME=armsr-armv8" >> $GITHUB_ENV
-            TARGET_NAME="armsr-armv8"
             echo "ARCH_1=arm64" >> $GITHUB_ENV
             echo "ARCH_2=aarch64" >> $GITHUB_ENV
             echo "ARCH_3=aarch64_generic" >> $GITHUB_ENV
@@ -194,13 +194,12 @@ jobs:
             echo "PROFILE=Default" >> $GITHUB_ENV
             echo "TARGET_SYSTEM=armvirt/64" >> $GITHUB_ENV
             echo "TARGET_NAME=armvirt-64" >> $GITHUB_ENV
-            TARGET_NAME="armvirt-64"
             echo "ARCH_1=arm64" >> $GITHUB_ENV
             echo "ARCH_2=aarch64" >> $GITHUB_ENV
             echo "ARCH_3=aarch64_generic" >> $GITHUB_ENV
           fi
-          echo "WORKING_DIR="${RELEASE_BRANCH%:*}"-imagebuilder-"$TARGET_NAME".Linux-x86_64" >> $GITHUB_ENV
-          echo "DOWNLOAD_BASE=https://downloads."${RELEASE_BRANCH%:*}".org" >> $GITHUB_ENV
+          echo "WORKING_DIR=${RELEASE_BRANCH%:*}-imagebuilder-$TARGET_NAME.Linux-x86_64" >> $GITHUB_ENV
+          echo "DOWNLOAD_BASE=https://downloads.${RELEASE_BRANCH%:*}.org" >> $GITHUB_ENV
           echo "BASE=${RELEASE_BRANCH%:*}" >> $GITHUB_ENV
           echo "BRANCH=${RELEASE_BRANCH#*:}" >> $GITHUB_ENV
           echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
@@ -244,10 +243,14 @@ jobs:
           bash scripts/builder-patch.sh
           bash scripts/misc.sh
           echo "VPN Client: $TUNNEL"
-          bash scripts/tunnel_app.sh $TUNNEL
-          if [ "$TUNNEL" = "openclash" ] || [ "$TUNNEL" = "neko-openclash-passwall" ]; then bash scripts/clash-core.sh; fi
-          if [ "$TUNNEL" = "neko" ] || [ "$TUNNEL" = "neko-openclash-passwall" ]; then bash scripts/neko_core.sh; fi
-          if [ "$TUNNEL" = "neko-openclash-passwall" ]; then bash scripts/clash-core.sh; bash scripts/neko_core.sh; fi
+          if [ "$TUNNEL" != "no-tunnel" ]; then
+            bash scripts/tunnel_app.sh $TUNNEL
+            if [ "$TUNNEL" = "openclash" ] || [ "$TUNNEL" = "neko-openclash-passwall" ]; then bash scripts/clash-core.sh; fi
+            if [ "$TUNNEL" = "neko" ] || [ "$TUNNEL" = "neko-openclash-passwall" ]; then bash scripts/neko_core.sh; fi
+            if [ "$TUNNEL" = "neko-openclash-passwall" ]; then bash scripts/clash-core.sh; bash scripts/neko_core.sh; fi
+          else
+            echo "No VPN Client selected; skipping tunnel scripts."
+          fi
           echo "Total custom packages: $(find packages -type f -name "*.ipk" | wc -l)"
           ls packages
           echo "status=success" >> $GITHUB_OUTPUT
@@ -267,14 +270,14 @@ jobs:
           echo -e "Server space usage after compilation: \n$(df -hT ${PWD}) \n"
 
       - name: Clear server space
-        if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
+        if: steps.compile.outputs.status == 'success' && !cancelled()
         run: |
           cd $WORKING_DIR
           rm -rf $(ls . | grep -vE "^compiled_images$" | xargs) 2>/dev/null
           df -hT ${PWD}
 
       - name: Packaging ${{ inputs.release_branch }}
-        if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
+        if: steps.compile.outputs.status == 'success' && !cancelled()
         uses: ophub/amlogic-s9xxx-openwrt@main
         with:
           auto_kernel: ${{ inputs.auto_kernel }}
@@ -312,7 +315,7 @@ jobs:
 
       - name: Upload Firmware to Release
         uses: svenstaro/upload-release-action@v2
-        if: ${{ steps.prep_upload.outputs.status }} == 'success' && !cancelled()
+        if: steps.prep_upload.outputs.status == 'success' && !cancelled()
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
